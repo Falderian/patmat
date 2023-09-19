@@ -21,9 +21,13 @@ case class Leaf(char: Char, weight: Int) extends CodeTree
 trait Huffman extends HuffmanInterface:
 
   // Part 1: Basics
-  def weight(tree: CodeTree): Int = ??? // tree match ...
+  def weight(tree: CodeTree): Int = tree match
+    case Fork(left, right, chars, weight) => weight
+    case Leaf(char, weight) => weight
 
-  def chars(tree: CodeTree): List[Char] = ??? // tree match ...
+  def chars(tree: CodeTree): List[Char] = tree match
+    case Fork(left, right, chars, weight) => chars
+    case Leaf(char, weight) => List(char)
 
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
@@ -64,7 +68,10 @@ trait Huffman extends HuffmanInterface:
    *       println("integer is  : "+ theInt)
    *   }
    */
-  def times(chars: List[Char]): List[(Char, Int)] = ???
+  def times(chars: List[Char]): List[(Char, Int)] =
+    val arr: Array[(Char, Int)] = Array[(Char, Int)]()
+    chars.foreach(char => arr :+ (char, chars.count(_ == char)))
+    arr.toList
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -73,7 +80,9 @@ trait Huffman extends HuffmanInterface:
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
+    freqs.sortWith(_._2 < _._2).map(pair => Leaf(pair._1, pair._2))
+
 
   /**
    * Checks whether the list `trees` contains only one single code tree.
