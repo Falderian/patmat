@@ -69,9 +69,9 @@ trait Huffman extends HuffmanInterface:
    *   }
    */
   def times(chars: List[Char]): List[(Char, Int)] =
-    val arr: Array[(Char, Int)] = Array[(Char, Int)]()
-    chars.foreach(char => arr :+ (char, chars.count(_ == char)))
-    arr.toList
+    var list: List[(Char, Int)] = List[(Char, Int)]()
+    chars.foreach(char => list = list :+ (char, chars.count(_ == char)))
+    list.toSet.toList
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -81,8 +81,7 @@ trait Huffman extends HuffmanInterface:
    * of a leaf is the frequency of the character.
    */
   def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
-    freqs.sortWith(_._2 < _._2).map(pair => Leaf(pair._1, pair._2))
-
+    freqs.sortBy(pair => pair._2).map(pair => Leaf(pair._1, pair._2))
 
   /**
    * Checks whether the list `trees` contains only one single code tree.
@@ -103,7 +102,7 @@ trait Huffman extends HuffmanInterface:
    */
   def combine(trees: List[CodeTree]): List[CodeTree] =
     trees match
-      case left :: right :: tree => (makeCodeTree(left, right) :: tree).sortWith((a, b) => weight(a) < weight(b))
+      case left :: right :: tree => (makeCodeTree(left, right) :: tree).sortBy(weight(_))
       case _ => trees
 
 
@@ -198,14 +197,17 @@ trait Huffman extends HuffmanInterface:
    * a valid code tree that can be represented as a code table. Using the code tables of the
    * sub-trees, think of how to build the code table for the entire tree.
    */
-  def convert(tree: CodeTree): CodeTable = ???
+  def convert(tree: CodeTree): CodeTable = tree match
+    case fork: Fork => mergeCodeTables(convert(fork.left), convert(fork.right))
+    case leaf: Leaf => List((leaf.char, List()))
 
   /**
    * This function takes two code tables and merges them into one. Depending on how you
    * use it in the `convert` method above, this merge method might also do some transformations
    * on the two parameter code tables.
    */
-  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = a ::: b
+  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable =
+    a.map(code => (code._1, 0 :: code._2)) ::: b.map(code => (code._1, 1 :: code._2))
 
   /**
    * This function encodes `text` according to the code tree `tree`.
