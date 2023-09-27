@@ -141,10 +141,12 @@ trait Huffman extends HuffmanInterface:
    */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] =
     def loop(remainingTree: CodeTree, bits: List[Bit]): List[Char] = remainingTree match
-        case Leaf(char, weight) if bits.isEmpty => List(char)
-        case Leaf(char, weight) => char :: loop(tree, bits)
-        case Fork(left, right, chars, weight) if bits.head == 0 => loop(left, bits.tail)
-        case Fork(left, right, chars, weight) => loop(right, bits.tail)
+        case Leaf(char, weight) =>
+          if(bits.isEmpty) then List(char)
+          else char :: loop(tree, bits)
+        case Fork(left, right, chars, weight) =>
+          if(bits.head == 0) then loop(left, bits.tail)
+          else loop(right, bits.tail)
     loop(tree, bits)
 
   /**
