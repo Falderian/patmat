@@ -69,9 +69,10 @@ trait Huffman extends HuffmanInterface:
    *   }
    */
   def times(chars: List[Char]): List[(Char, Int)] =
-    var list: List[(Char, Int)] = List[(Char, Int)]()
-    chars.foreach(char => list = list :+ (char, chars.count(_ == char)))
-    list.toSet.toList
+    var uniqueChars: List[(Char)] = chars.distinct
+    var result: List[(Char, Int)]= List[(Char, Int)]()
+    uniqueChars.foreach(char => result = result :+ (char, chars.count(_ == char)))
+    result
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -140,13 +141,11 @@ trait Huffman extends HuffmanInterface:
    * the resulting list of characters.
    */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] =
-    def loop(remainingTree: CodeTree, bits: List[Bit]): List[Char] = remainingTree match
-        case Leaf(char, weight) =>
-          if(bits.isEmpty) then List(char)
-          else char :: loop(tree, bits)
-        case Fork(left, right, chars, weight) =>
-          if(bits.head == 0) then loop(left, bits.tail)
-          else loop(right, bits.tail)
+    def loop(remainingTree: CodeTree, bits: List[Bit]): List[Char] = (remainingTree, bits) match
+        case (Leaf(char, _), Nil) => List(char)
+        case (Leaf(char, _), notEmptyBits) => char :: loop(tree, notEmptyBits)
+        case (Fork(left, right, chars, weight), 0 :: tail) => loop(left, bits.tail)
+        case (Fork(left, right, chars, weight), 1 :: tail) => loop(right, bits.tail)
     loop(tree, bits)
 
   /**
